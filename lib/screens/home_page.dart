@@ -15,6 +15,7 @@ class _HomePageState extends State<HomePage> {
   String statusText = 'Waiting for a cloud message';
   String imagePath = 'lib/assets/images/default.png';
   String tokenText = 'Loading token...';
+  String debugInfo = 'No message received yet';
 
   @override
   void initState() {
@@ -25,27 +26,41 @@ class _HomePageState extends State<HomePage> {
   Future<void> _setupFCM() async {
     await _fcmService.initialize(
       onData: (RemoteMessage message) {
-        final assetName = message.data['asset'] ?? 'default';
+        final String assetName =
+            (message.data['asset']?.toString().trim().isNotEmpty ?? false)
+                ? message.data['asset'].toString().trim()
+                : 'default';
+
+        final String title =
+            message.notification?.title ??
+            message.data['title']?.toString() ??
+            'Payload received';
+
+        final String body =
+            message.notification?.body ??
+            message.data['body']?.toString() ??
+            'No body';
+
+        debugPrint('Message title: $title');
+        debugPrint('Message body: $body');
+        debugPrint('Message data: ${message.data}');
+        debugPrint('Updated image path: lib/assets/images/$assetName.png');
 
         setState(() {
-          statusText = message.notification?.title ?? 'Payload received';
+          statusText = title;
           imagePath = 'lib/assets/images/$assetName.png';
+          debugInfo = 'Title: $title\nBody: $body\nData: ${message.data}';
         });
-
-        debugPrint('Message title: ${message.notification?.title}');
-        debugPrint('Message body: ${message.notification?.body}');
-        debugPrint('Message data: ${message.data}');
-        debugPrint('Updated image path: $imagePath');
       },
     );
 
-    final token = await _fcmService.getToken();
+    final String? token = await _fcmService.getToken();
 
     setState(() {
       tokenText = token ?? 'No token found';
     });
 
-    debugPrint('FCM token: $token');
+    debugPrint('FCM token from HomePage: $token');
   }
 
   @override
@@ -54,10 +69,9 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: const Text('Cloud Messaging App'),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               statusText,
@@ -82,6 +96,13 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 8),
             SelectableText(tokenText),
+            const SizedBox(height: 20),
+            const Text(
+              'Debug Info:',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 8),
+            SelectableText(debugInfo),
           ],
         ),
       ),

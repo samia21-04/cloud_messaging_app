@@ -14,28 +14,31 @@ class FCMService {
         sound: true,
       );
 
-      debugPrint(
-        'Permission status: ${settings.authorizationStatus}',
-      );
-
-      if (settings.authorizationStatus == AuthorizationStatus.denied ||
-          settings.authorizationStatus == AuthorizationStatus.notDetermined) {
-        debugPrint('Notification permission was not granted.');
-        return;
-      }
+      debugPrint('Permission status: ${settings.authorizationStatus}');
 
       FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+        debugPrint('onMessage fired');
+        debugPrint('Foreground title: ${message.notification?.title}');
+        debugPrint('Foreground body: ${message.notification?.body}');
+        debugPrint('Foreground data: ${message.data}');
         onData(message);
       });
 
       FirebaseMessaging.onMessageOpenedApp.listen((RemoteMessage message) {
+        debugPrint('onMessageOpenedApp fired');
+        debugPrint('Opened title: ${message.notification?.title}');
+        debugPrint('Opened body: ${message.notification?.body}');
+        debugPrint('Opened data: ${message.data}');
         onData(message);
       });
 
-      final RemoteMessage? initialMessage =
-          await messaging.getInitialMessage();
+      final RemoteMessage? initialMessage = await messaging.getInitialMessage();
 
       if (initialMessage != null) {
+        debugPrint('getInitialMessage fired');
+        debugPrint('Initial title: ${initialMessage.notification?.title}');
+        debugPrint('Initial body: ${initialMessage.notification?.body}');
+        debugPrint('Initial data: ${initialMessage.data}');
         onData(initialMessage);
       }
     } catch (e) {
@@ -45,7 +48,7 @@ class FCMService {
 
   Future<String?> getToken() async {
     try {
-      final token = await messaging.getToken();
+      final String? token = await messaging.getToken();
       debugPrint('FCM token: $token');
       return token;
     } catch (e) {
