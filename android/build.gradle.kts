@@ -26,6 +26,11 @@ subprojects {
     project.evaluationDependsOn(":app")
 }
 
+// Optional: Specify NDK version if needed
+android {
+    ndkVersion = "27.0.12077973"
+}
+
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)
 }
