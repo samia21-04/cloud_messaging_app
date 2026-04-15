@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'services/fcm_service.dart';
+import '../services/fcm_service.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -13,7 +13,7 @@ class _HomePageState extends State<HomePage> {
   final FCMService _fcmService = FCMService();
 
   String statusText = 'Waiting for a cloud message';
-  String imagePath = 'assets/images/default.png';
+  String imagePath = 'lib/assets/images/default.png';
   String tokenText = 'Loading token...';
 
   @override
@@ -25,16 +25,17 @@ class _HomePageState extends State<HomePage> {
   Future<void> _setupFCM() async {
     await _fcmService.initialize(
       onData: (RemoteMessage message) {
+        final assetName = message.data['asset'] ?? 'default';
+
         setState(() {
           statusText = message.notification?.title ?? 'Payload received';
-
-          imagePath =
-              'assets/images/${message.data['asset'] ?? 'default'}.png';
+          imagePath = 'lib/assets/images/$assetName.png';
         });
 
         debugPrint('Message title: ${message.notification?.title}');
         debugPrint('Message body: ${message.notification?.body}');
         debugPrint('Message data: ${message.data}');
+        debugPrint('Updated image path: $imagePath');
       },
     );
 
@@ -56,6 +57,7 @@ class _HomePageState extends State<HomePage> {
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Text(
               statusText,
